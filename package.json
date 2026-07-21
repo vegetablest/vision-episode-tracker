@@ -2,7 +2,7 @@
   "name": "vision-episode-tracker",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "yarn@1.22.22",
+  "packageManager": "yarn@4.9.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
