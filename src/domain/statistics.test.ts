@@ -1,0 +1,12 @@
+import { describe, expect, it } from "vitest";
+import type { VisionEpisode } from "./episode";
+import { compare, median, periodMetrics, timeDistribution } from "./statistics";
+
+const episode = (patch: Partial<VisionEpisode> = {}): VisionEpisode => ({ schemaVersion: 1, id: crypto.randomUUID(), revision: 1, status: "completed", recordMethod: "manual", occurredOn: "2026-07-20", timezone: "UTC", startAt: "2026-07-20T14:00:00.000Z", endAt: null, timePeriod: null, dateAccuracy: "exact", startTimeAccuracy: "exact", endTimeAccuracy: "unknown", duration: { minutes: 20, source: "manual", accuracy: "exact" }, eyeScope: null, visualFields: [], visualSymptoms: [], severity: null, onsetPattern: null, similarToPrevious: null, recoveredCompletely: null, residualSymptoms: null, associatedSymptoms: [], activity: null, possibleRelatedFactors: [], otherVisualSymptom: null, otherAssociatedSymptom: null, otherRelatedFactor: null, note: null, createdAt: "2026-07-20T14:00:00.000Z", updatedAt: "2026-07-20T14:00:00.000Z", voidedAt: null, ...patch });
+
+describe("statistics", () => {
+  it("calculates median for odd, even and empty inputs", () => { expect(median([])).toBeNull(); expect(median([3, 1, 2])).toBe(2); expect(median([4, 1, 2, 3])).toBe(2.5); });
+  it("does not invent a percentage when previous is zero", () => { expect(compare(3, 0)).toMatchObject({ percentageChange: null, displayMode: "from_zero" }); expect(compare(0, 0).displayMode).toBe("none"); });
+  it("excludes voided records and counts multiple episodes on one symptom day", () => { const result = periodMetrics([episode(), episode(), episode({ status: "voided", voidedAt: "2026-07-21T00:00:00.000Z" })], 7, new Date("2026-07-21T12:00:00.000Z")); expect(result.episodeCount).toBe(2); expect(result.symptomDays).toBe(1); expect(result.medianDurationMinutes).toBe(20); });
+  it("keeps period-only entries out of hourly distribution", () => { const result = timeDistribution([episode(), episode({ startAt: null, startTimeAccuracy: "period_only", dateAccuracy: "period_only", timePeriod: "afternoon" })], "UTC"); expect(result.hourly[14].exact).toBe(1); expect(result.excludedFromHourly).toBe(1); expect(result.periods.find((item) => item.period === "afternoon")?.count).toBe(2); });
+});
