@@ -1,5 +1,5 @@
 import type { TimePeriod, VisionEpisode } from "./episode";
-import { localHour, periodForHour } from "./time";
+import { localDate, localHour, periodForHour } from "./time";
 
 export interface Comparison { current: number; previous: number; absoluteChange: number; percentageChange: number | null; direction: "up" | "down" | "same"; displayMode: "percentage" | "from_zero" | "none" }
 export interface PeriodMetrics { episodeCount: number; symptomDays: number; liveCount: number; manualCount: number; ongoingCount: number; exactDurationCount: number; approximateDurationCount: number; missingDurationCount: number; totalDurationMinutes: number | null; averageDurationMinutes: number | null; medianDurationMinutes: number | null; maxDurationMinutes: number | null; episodeComparison: Comparison; symptomDaysComparison: Comparison }
@@ -22,11 +22,16 @@ function summarize(items: VisionEpisode[]) {
   return { episodeCount: valid.length, symptomDays: new Set(valid.map((episode) => episode.occurredOn)).size, liveCount: valid.filter((episode) => episode.recordMethod === "live").length, manualCount: valid.filter((episode) => episode.recordMethod === "manual").length, ongoingCount: valid.filter((episode) => episode.status === "ongoing").length, exactDurationCount: valid.filter((episode) => episode.duration.accuracy === "exact").length, approximateDurationCount: valid.filter((episode) => episode.duration.accuracy === "approximate").length, missingDurationCount: valid.filter((episode) => episode.duration.minutes === null).length, totalDurationMinutes: durations.length ? durations.reduce((sum, value) => sum + value, 0) : null, averageDurationMinutes: durations.length ? durations.reduce((sum, value) => sum + value, 0) / durations.length : null, medianDurationMinutes: median(durations), maxDurationMinutes: durations.length ? Math.max(...durations) : null };
 }
 
-export function periodMetrics(episodes: VisionEpisode[], days: number, now = new Date()): PeriodMetrics {
-  const end = now.getTime();
-  const span = days * 86400000;
-  const current = episodes.filter((item) => { const time = new Date(`${item.occurredOn}T12:00:00Z`).getTime(); return time > end - span && time <= end; });
-  const previous = episodes.filter((item) => { const time = new Date(`${item.occurredOn}T12:00:00Z`).getTime(); return time > end - span * 2 && time <= end - span; });
+export function periodMetrics(episodes: VisionEpisode[], days: number, now = new Date(), timezone = "UTC"): PeriodMetrics {
+  const todayKey = localDate(now, timezone);
+  const today = new Date(`${todayKey}T00:00:00.000Z`).getTime();
+  const day = 86400000;
+  const dateAt = (offset: number) => new Date(today + offset * day).toISOString().slice(0, 10);
+  const currentStart = dateAt(-(days - 1));
+  const previousStart = dateAt(-(days * 2 - 1));
+  const previousEnd = dateAt(-days);
+  const current = episodes.filter((item) => item.occurredOn >= currentStart && item.occurredOn <= todayKey);
+  const previous = episodes.filter((item) => item.occurredOn >= previousStart && item.occurredOn <= previousEnd);
   const result = summarize(current);
   const prior = summarize(previous);
   return { ...result, episodeComparison: compare(result.episodeCount, prior.episodeCount), symptomDaysComparison: compare(result.symptomDays, prior.symptomDays) };

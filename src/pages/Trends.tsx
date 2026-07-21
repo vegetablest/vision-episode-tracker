@@ -5,7 +5,7 @@ import { dataQuality, periodMetrics, timeDistribution } from "../domain/statisti
 export function Trends() {
   const episodes = useEpisodes();
   const settings = useSettings();
-  const metrics = periodMetrics(episodes, 30);
+  const metrics = periodMetrics(episodes, 30, new Date(), settings.reportingTimezone);
   const distribution = timeDistribution(episodes, settings.reportingTimezone);
   const quality = dataQuality(episodes);
   const symptoms = [...episodes.filter((item) => item.status !== "voided").flatMap((item) => item.visualSymptoms).reduce((map, item) => map.set(item, (map.get(item) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
