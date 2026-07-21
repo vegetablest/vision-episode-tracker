@@ -46,6 +46,9 @@ p { line-height: 1.6; }
 .active-panel .danger { width: 100%; margin-top: 18px; background: var(--accent); }
 .pulse { color: #ffb18c; font-size: .8rem; font-weight: 800; }
 .form-stack { display: grid; gap: 18px; }
+.more-toggle { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 16px; border: 1px dashed var(--accent); border-radius: 14px; color: var(--accent); background: transparent; font-weight: 750; }
+.more-toggle span:last-child { font-size: 1.45rem; }
+.more-fields { display: grid; gap: 18px; padding-left: 12px; border-left: 3px solid #d6633640; }
 .form-stack fieldset, .settings-group { margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #fffdf780; }
 .form-stack legend { padding: 0 5px; font-weight: 750; }
 .form-stack label, .settings-group label { display: grid; gap: 8px; font-weight: 700; }
