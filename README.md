@@ -29,8 +29,7 @@ Vision Episode Tracker（视觉异常发作记录器）是一款本地优先的 
 - Zod；
 - vite-plugin-pwa / Workbox；
 - Vitest、Testing Library、Playwright；
-- Cloudflare Workers Static Assets；
-- Docker / Nginx。
+- Cloudflare Workers。
 
 ## 本地开发
 
@@ -58,13 +57,6 @@ yarn build
 ```sh
 yarn build
 yarn deploy
-```
-
-使用 Docker：
-
-```sh
-docker build -t vision-episode-tracker .
-docker run --rm -p 8080:80 vision-episode-tracker
 ```
 
 ## 路线图
