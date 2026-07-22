@@ -68,6 +68,16 @@ export interface AppMetadata {
   lastMigrationAt: string | null;
   lastBackupAt: string | null;
   changesSinceBackup: number;
+  ownerId?: string | null;
+}
+
+export interface SyncJob {
+  id: string;
+  episodeId: string;
+  operation: "upsert" | "delete";
+  createdAt: string;
+  revision?: number;
+  updatedAt?: string;
 }
 
 export type EpisodeDraft = Pick<VisionEpisode, "eyeScope" | "visualFields" | "visualSymptoms" | "severity" | "onsetPattern" | "similarToPrevious" | "recoveredCompletely" | "residualSymptoms" | "associatedSymptoms" | "activity" | "possibleRelatedFactors" | "otherVisualSymptom" | "otherAssociatedSymptom" | "otherRelatedFactor" | "note">;

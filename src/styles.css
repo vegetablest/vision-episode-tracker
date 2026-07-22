@@ -115,6 +115,11 @@ textarea { min-height: 100px; resize: vertical; }
 .settings-group { display: grid; gap: 13px; margin-bottom: 14px; }
 .settings-group h2, .settings-group p { margin: 0; }
 .onboarding, .splash { min-height: 100vh; display: grid; place-items: center; padding: 28px; text-align: center; }
+.auth-page { min-height: 100vh; display: grid; place-items: center; padding: 28px; }
+.auth-page form { display: grid; width: min(430px, 100%); gap: 14px; padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: var(--paper); }
+.auth-page form > p, .auth-page form > h1 { margin-top: 0; }
+.auth-page label { display: grid; gap: 7px; font-weight: 700; }
+.text-button { min-height: 42px; border: 0; color: var(--accent); background: transparent; cursor: pointer; font-weight: 700; }
 .onboarding > div { max-width: 480px; }
 .onboarding-icon { display: grid; place-items: center; width: 92px; height: 92px; margin: 0 auto 28px; border-radius: 50%; color: white; background: var(--ink); font-size: 2.5rem; }
 .onboarding .primary { width: 100%; margin-top: 20px; }

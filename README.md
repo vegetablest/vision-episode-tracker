@@ -14,18 +14,26 @@ Vision Episode Tracker（视觉异常发作记录器）是一款本地优先的 
 - 查看 7、30、365 天概览、时段分布、日历和数据完整度；
 - 生成可复制、打印或保存为 PDF 的就诊摘要；
 - 导出 CSV，以及带校验和的完整 JSON 备份；
-- 安装到 iPhone 主屏幕，首次加载后可离线使用。
+- 安装到 iPhone 主屏幕，首次加载后可离线使用；
+- 无需账号即可在本机完整使用；
+- 可选邮箱账户，在联网时跨设备同步；
+- 首次登录时认领已有本地记录，导出前合并云端与本机数据。
 
 ## 数据与隐私
 
-当前版本没有账号和后端。所有健康记录默认只保存在浏览器的 IndexedDB 中，不会上传到 GitHub、Cloudflare 或第三方分析服务。
+未登录时，健康记录只保存在当前浏览器的 IndexedDB 中。用户注册或登录后，已有本地记录会被当前账户认领，后续变更先写入本机，再通过 outbox 在联网时同步到 Supabase。
 
-删除 PWA、清除浏览器网站数据或更换访问域名都可能造成数据丢失，请定期导出 JSON 备份。导出的备份文件当前不加密，需要由用户自行妥善保管。
+云端数据通过 PostgreSQL Row Level Security 按账户隔离。前端只使用可公开的 publishable key，不得包含 secret key、service-role key、数据库密码或其他高权限凭据。应用不会把健康数据发送到 GitHub、Cloudflare 或分析服务。
+
+清除浏览器数据不会删除已经完成同步的云端记录，但可能丢失尚未上传的离线变更。退出账户时会清除该账户在设备上的本地缓存，避免随后进入本地模式的使用者看到原账户数据。
+
+登录用户导出 JSON 前会先完成一次双向同步；同步失败时可以取消，或明确选择只导出当前设备的数据。导出的备份文件当前不加密，需要由用户自行妥善保管。
 
 ## 技术栈
 
 - React、TypeScript、Vite；
 - Dexie / IndexedDB；
+- Supabase Auth / PostgreSQL；
 - Zod；
 - vite-plugin-pwa / Workbox；
 - Vitest、Testing Library、Playwright；
@@ -41,6 +49,43 @@ yarn install --immutable
 yarn dev
 ```
 
+复制环境变量模板并填写 Supabase 项目配置：
+
+```sh
+cp .env.example .env
+```
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your-key
+```
+
+`VITE_*` 是 Vite 构建时变量，会被写入浏览器 JavaScript，因此只能存放公开配置。不要添加 secret key、service-role key 或数据库密码。
+
+### Supabase 初始化
+
+在目标 Supabase 项目的 SQL Editor 中执行：
+
+```text
+supabase/migrations/202607220001_create_episodes.sql
+```
+
+该 migration 创建：
+
+- `episodes` 发作记录表；
+- `episode_deletions` 删除标记表；
+- 按 `auth.uid()` 隔离数据的 RLS policies；
+- 带版本比较的同步函数，防止旧设备覆盖或复活已删除记录。
+
+如启用邮箱确认，还需要在 Supabase Dashboard 的 Authentication → URL Configuration 中设置正式站点地址，并把本地开发地址加入 Redirect URLs，例如：
+
+```text
+Site URL: https://your-app.example.com
+Redirect URLs:
+  https://your-app.example.com/**
+  http://localhost:5173/**
+```
+
 常用检查命令：
 
 ```sh
@@ -52,19 +97,31 @@ yarn build
 
 ## 部署
 
-部署到 Cloudflare Workers：
+本项目通过 Cloudflare Workers Static Assets 托管 `dist/`：
 
 ```sh
 yarn build
 yarn deploy
 ```
 
+静态站点不能在浏览器运行时读取服务器 `.env`。Supabase 的两个公开变量必须在执行 `yarn build` 时存在：本地部署由本地 `.env` 提供，CI 或 Cloudflare 平台构建则应配置对应的 build variables。
+
+例如 GitHub Actions：
+
+```yaml
+- name: Build PWA
+  env:
+    VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+    VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+  run: yarn build
+```
+
 ## 路线图
 
 未来版本计划在不破坏本地优先原则的前提下逐步加入：
 
-- 用户注册、登录和设备管理；
-- 可选择的数据托管与多设备同步；
+- 设备管理和活跃会话查看；
+- 更清晰的同步状态、失败重试与冲突提示；
 - 端到端加密、备份加密和精细化数据权限；
 - 受控分享报告及医生协作能力；
 - 更完整的趋势对比和自定义报告；

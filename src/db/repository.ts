@@ -21,17 +21,25 @@ export interface ManualEpisodeInput {
 export class EpisodeRepository {
   constructor(private readonly database: VisionTrackerDB = db) {}
 
+  private queue(episodeId: string, operation: "upsert" | "delete", revision?: number, updatedAt?: string): Promise<string> {
+    return this.database.syncQueue.put({ id: episodeId, episodeId, operation, createdAt: new Date().toISOString(), revision, updatedAt }).then((id) => {
+      if (typeof window !== "undefined") setTimeout(() => window.dispatchEvent(new Event("vision-sync-requested")));
+      return id;
+    });
+  }
+
   private async changed(): Promise<void> {
     await this.database.metadata.where("id").equals("metadata").modify((metadata) => { metadata.changesSinceBackup += 1; });
   }
 
   async createLiveEpisode(now = new Date(), timezone = Intl.DateTimeFormat().resolvedOptions().timeZone): Promise<VisionEpisode> {
     await initializeDatabase(this.database);
-    return this.database.transaction("rw", this.database.episodes, this.database.metadata, async () => {
+    return this.database.transaction("rw", this.database.episodes, this.database.metadata, this.database.syncQueue, async () => {
       if (await this.getActiveEpisode()) throw new ActiveEpisodeError();
       const iso = now.toISOString();
       const episode = episodeSchema.parse({ ...emptyDetails, schemaVersion: 1, id: crypto.randomUUID(), revision: 1, status: "ongoing", recordMethod: "live", occurredOn: localDate(now, timezone), timezone, startAt: iso, endAt: null, timePeriod: null, dateAccuracy: "exact", startTimeAccuracy: "exact", endTimeAccuracy: "unknown", duration: { minutes: null, source: "unknown", accuracy: "unknown" }, createdAt: iso, updatedAt: iso, voidedAt: null });
       await this.database.episodes.add(episode);
+      await this.queue(episode.id, "upsert");
       await this.changed();
       return episode;
     });
@@ -51,25 +59,26 @@ export class EpisodeRepository {
     const computed = input.startAt && input.endAt ? (new Date(input.endAt).getTime() - new Date(input.startAt).getTime()) / 60000 : null;
     const minutes = computed ?? input.durationMinutes;
     const episode = episodeSchema.parse({ ...emptyDetails, ...input.details, schemaVersion: 1, id: crypto.randomUUID(), revision: 1, status: "completed", recordMethod: "manual", occurredOn: input.occurredOn, timezone: input.timezone, startAt: input.startAt, endAt: input.endAt, timePeriod: input.timePeriod, dateAccuracy: input.accuracy === "period_only" || input.accuracy === "date_only" ? input.accuracy : "exact", startTimeAccuracy: input.accuracy, endTimeAccuracy: input.endAt ? input.accuracy : "unknown", duration: { minutes, source: computed !== null ? "computed" : minutes !== null ? "manual" : "unknown", accuracy: minutes !== null ? input.accuracy === "exact" ? "exact" : "approximate" : "unknown" }, createdAt: now, updatedAt: now, voidedAt: null });
-    await this.database.transaction("rw", this.database.episodes, this.database.metadata, async () => { await this.database.episodes.add(episode); await this.changed(); });
+    await this.database.transaction("rw", this.database.episodes, this.database.metadata, this.database.syncQueue, async () => { await this.database.episodes.add(episode); await this.queue(episode.id, "upsert"); await this.changed(); });
     return episode;
   }
 
   async updateEpisode(id: string, patch: Partial<EpisodeDraft>): Promise<VisionEpisode> { return this.mutate(id, (episode) => ({ ...episode, ...patch })); }
   async voidEpisode(id: string): Promise<void> { await this.mutate(id, (episode) => ({ ...episode, status: "voided", voidedAt: new Date().toISOString() })); }
   async restoreEpisode(id: string): Promise<void> { await this.mutate(id, (episode) => ({ ...episode, status: episode.endAt || episode.recordMethod === "manual" ? "completed" : "ongoing", voidedAt: null })); }
-  async permanentlyDeleteEpisode(id: string): Promise<void> { await this.database.transaction("rw", this.database.episodes, this.database.metadata, async () => { await this.database.episodes.delete(id); await this.changed(); }); }
+  async permanentlyDeleteEpisode(id: string): Promise<void> { await this.database.transaction("rw", this.database.episodes, this.database.metadata, this.database.syncQueue, async () => { const existing = await this.database.episodes.get(id); if (!existing) return; const updatedAt = new Date().toISOString(); await this.database.episodes.delete(id); await this.queue(id, "delete", existing.revision + 1, updatedAt); await this.changed(); }); }
   async getEpisode(id: string): Promise<VisionEpisode | undefined> { return this.database.episodes.get(id); }
   async getActiveEpisode(): Promise<VisionEpisode | undefined> { return this.database.episodes.where("status").equals("ongoing").first(); }
   async listEpisodes(): Promise<VisionEpisode[]> { return this.database.episodes.orderBy("occurredOn").reverse().sortBy("updatedAt").then((items) => items.reverse()); }
   async countEpisodes(): Promise<number> { return this.database.episodes.count(); }
 
   private async mutate(id: string, transform: (episode: VisionEpisode) => VisionEpisode): Promise<VisionEpisode> {
-    return this.database.transaction("rw", this.database.episodes, this.database.metadata, async () => {
+    return this.database.transaction("rw", this.database.episodes, this.database.metadata, this.database.syncQueue, async () => {
       const existing = await this.database.episodes.get(id);
       if (!existing) throw new EpisodeNotFoundError();
       const next = episodeSchema.parse({ ...transform(existing), revision: existing.revision + 1, updatedAt: new Date().toISOString() });
       await this.database.episodes.put(next);
+      await this.queue(next.id, "upsert");
       await this.changed();
       return next;
     });
