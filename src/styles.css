@@ -120,6 +120,9 @@ textarea { min-height: 100px; resize: vertical; }
 .auth-page form > p, .auth-page form > h1 { margin-top: 0; }
 .auth-page label { display: grid; gap: 7px; font-weight: 700; }
 .text-button { min-height: 42px; border: 0; color: var(--accent); background: transparent; cursor: pointer; font-weight: 700; }
+.install-guide .install-icon { color: var(--accent); font-size: 1.8rem; }
+.install-guide .install-title { margin: 0; font-family: inherit; font-size: 1.15rem; font-weight: 600; line-height: 1.2; letter-spacing: 0; }
+.install-guide ol { margin: 0; padding-left: 22px; line-height: 1.8; }
 .onboarding > div { max-width: 480px; }
 .onboarding-icon { display: grid; place-items: center; width: 92px; height: 92px; margin: 0 auto 28px; border-radius: 50%; color: white; background: var(--ink); font-size: 2.5rem; }
 .onboarding .primary { width: 100%; margin-top: 20px; }

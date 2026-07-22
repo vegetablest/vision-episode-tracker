@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["icon.svg"],
+      includeAssets: ["icon.svg", "icon-192.png", "icon-512.png"],
       manifest: {
         name: "视觉异常发作记录器",
         short_name: "视觉记录",
@@ -17,7 +17,11 @@ export default defineConfig({
         background_color: "#f4f1e8",
         display: "standalone",
         start_url: "./",
-        icons: [{ src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any maskable" }],
+        icons: [
+          { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
+        ],
       },
       workbox: { navigateFallback: "index.html", cleanupOutdatedCaches: true },
     }),
