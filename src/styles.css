@@ -65,6 +65,19 @@ textarea { min-height: 100px; resize: vertical; }
 .notice { padding: 10px; border-radius: 8px; background: #dcece5; }
 .switch { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
 .switch input { width: auto; min-height: 0; }
+.records-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 28px; }
+.records-toolbar .switch { margin: 0; white-space: nowrap; }
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); width: min(330px, 100%); padding: 4px; border: 1px solid var(--line); border-radius: 13px; background: #ffffff65; }
+.segmented button { min-height: 38px; border: 0; border-radius: 9px; background: transparent; font-weight: 700; }
+.segmented button.selected { color: white; background: var(--ink); box-shadow: 0 3px 10px #173f3a25; }
+.timeline { position: relative; }
+.timeline::before { position: absolute; top: 8px; bottom: 20px; left: 8px; width: 2px; content: ""; background: linear-gradient(var(--accent), #d8d4c8 85%, transparent); }
+.timeline-group { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; margin: 0 0 34px; padding-left: 34px; }
+.timeline-heading { position: relative; }
+.timeline-heading > i { position: absolute; top: 4px; left: -32px; width: 14px; height: 14px; border: 3px solid var(--paper); border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.timeline-heading h2 { margin: 0 0 4px; font-family: Georgia, "Songti SC", serif; font-size: 1.05rem; }
+.timeline-heading span { color: #71807c; font-size: .75rem; }
+.timeline-items { display: grid; gap: 9px; min-width: 0; }
 .detail-card { border-top: 1px solid var(--line); }
 .detail-card > div { display: grid; grid-template-columns: 110px 1fr; gap: 15px; padding: 15px 3px; border-bottom: 1px solid var(--line); }
 .detail-card span { color: #6b7975; }
@@ -114,6 +127,6 @@ textarea { min-height: 100px; resize: vertical; }
 .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 3px; color: #71807c; font-size: .66rem; font-weight: 700; }
 .bottom-nav a span { font-size: 1.25rem; }
 .bottom-nav a.active { color: var(--accent); }
-@media (max-width: 620px) { .page { padding-top: 22px; } .actions { grid-template-columns: 1fr; } .metrics { overflow-x: auto; grid-template-columns: repeat(3, minmax(150px, 1fr)); } .two-columns { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .page { padding-top: 22px; } .actions { grid-template-columns: 1fr; } .metrics { overflow-x: auto; grid-template-columns: repeat(3, minmax(150px, 1fr)); } .two-columns { grid-template-columns: 1fr; } .records-toolbar { align-items: stretch; flex-direction: column; } .segmented { width: 100%; } .timeline-group { grid-template-columns: 1fr; gap: 10px; padding-left: 30px; } .timeline-heading > i { left: -28px; } }
 @media (prefers-color-scheme: dark) { :root { color: #e6eee9; background: #13211f; --ink: #dcece5; --paper: #1c2c29; --line: #3b4b47; } body { background: radial-gradient(circle at 80% 0, #3e3028 0, transparent 26rem), #13211f; } .primary { color: #173f3a; background: #dcece5; } .active-panel { color: white; background: #284d47; } .metrics article, .form-stack fieldset, .settings-group { background: #1c2c298f; } .bottom-nav { background: #172622ee; border-color: #394945; } .report-paper { color: #19332f; } }
 @media print { .bottom-nav, .button-row, header .eyebrow, .medical-note { display: none; } body { background: white; } .page { padding: 0; } .report-paper { border: 0; box-shadow: none; } }
