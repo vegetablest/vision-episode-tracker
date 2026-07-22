@@ -64,10 +64,11 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your-key
 
 ### Supabase 初始化
 
-在目标 Supabase 项目的 SQL Editor 中执行：
+在目标 Supabase 项目的 SQL Editor 中按文件名顺序执行 `supabase/migrations/` 下的 migration：
 
 ```text
 supabase/migrations/202607220001_create_episodes.sql
+supabase/migrations/202607220002_enable_realtime.sql
 ```
 
 该 migration 创建：
@@ -76,6 +77,7 @@ supabase/migrations/202607220001_create_episodes.sql
 - `episode_deletions` 删除标记表；
 - 按 `auth.uid()` 隔离数据的 RLS policies；
 - 带版本比较的同步函数，防止旧设备覆盖或复活已删除记录。
+- 发作记录和删除标记的 Realtime publication。
 
 如启用邮箱确认，还需要在 Supabase Dashboard 的 Authentication → URL Configuration 中设置正式站点地址，并把本地开发地址加入 Redirect URLs，例如：
 
