@@ -33,6 +33,6 @@ export function App() {
   useEffect(() => { const enableGuest = () => setGuestMode(true); window.addEventListener("guest-mode-enabled", enableGuest); return () => window.removeEventListener("guest-mode-enabled", enableGuest); }, []);
   if (!auth.ready || !ready) return <div className="splash">正在安全地打开记录…</div>;
   if (!auth.user && !guestMode) return <AuthPage onSkip={() => { localStorage.setItem("guest-mode", "1"); setGuestMode(true); }} />;
-  if (!onboarded) return <Onboarding onDone={() => { localStorage.setItem("onboarding-complete", "1"); setOnboarded(true); }} />;
+  if (!onboarded) return <Onboarding signedIn={Boolean(auth.user)} onDone={() => { localStorage.setItem("onboarding-complete", "1"); setOnboarded(true); }} />;
   return <HashRouter><Shell /></HashRouter>;
 }
