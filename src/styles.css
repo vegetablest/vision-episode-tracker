@@ -42,7 +42,16 @@ p { line-height: 1.6; }
 .empty > span { display: block; font-size: 2.3rem; color: var(--accent); }
 .active-panel { padding: 22px; border-radius: 22px; background: var(--ink); color: white; }
 .active-panel fieldset, .active-panel label { border-color: #ffffff35; }
-.active-panel .chip, .active-panel textarea { color: white; background: #ffffff12; border-color: #ffffff35; }
+.active-panel .chip,
+.active-panel .severity button,
+.active-panel .mode-grid button,
+.active-panel textarea,
+.active-panel select {
+  color: white;
+  background: #ffffff12;
+  border-color: #ffffff35;
+}
+.active-panel select option { color: #19332f; background: #fffdf7; }
 .active-panel .danger { width: 100%; margin-top: 18px; background: var(--accent); }
 .pulse { color: #ffb18c; font-size: .8rem; font-weight: 800; }
 .form-stack { display: grid; gap: 18px; }
