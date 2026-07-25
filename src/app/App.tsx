@@ -8,6 +8,7 @@ import { Dashboard } from "../pages/Dashboard";
 import { ManualEntry } from "../pages/ManualEntry";
 import { Onboarding } from "../pages/Onboarding";
 import { RecordDetail } from "../pages/RecordDetail";
+import { RecordEdit } from "../pages/RecordEdit";
 import { Records } from "../pages/Records";
 import { Report } from "../pages/Report";
 import { Settings } from "../pages/Settings";
@@ -21,7 +22,7 @@ function AccountPage() {
 function Shell() {
   const location = useLocation();
   const showNav = !location.pathname.startsWith("/recording/") && !location.pathname.startsWith("/settings") && !location.pathname.startsWith("/account");
-  return <div className="app-shell"><Routes><Route path="/" element={<Dashboard />} /><Route path="/recording/current" element={<Dashboard />} /><Route path="/recording/manual" element={<ManualEntry />} /><Route path="/trends" element={<Trends />} /><Route path="/calendar" element={<CalendarPage />} /><Route path="/records" element={<Records />} /><Route path="/records/:id" element={<RecordDetail />} /><Route path="/report" element={<Report />} /><Route path="/settings" element={<Settings />} /><Route path="/account" element={<AccountPage />} /></Routes>{showNav && <nav className="bottom-nav">{[["/", "⌂", "首页"], ["/trends", "⌁", "趋势"], ["/calendar", "▦", "日历"], ["/records", "☷", "记录"], ["/report", "▤", "报告"]].map(([to, icon, name]) => <NavLink end={to === "/"} to={to} key={to}><span>{icon}</span>{name}</NavLink>)}</nav>}</div>;
+  return <div className="app-shell"><Routes><Route path="/" element={<Dashboard />} /><Route path="/recording/current" element={<Dashboard />} /><Route path="/recording/manual" element={<ManualEntry />} /><Route path="/trends" element={<Trends />} /><Route path="/calendar" element={<CalendarPage />} /><Route path="/records" element={<Records />} /><Route path="/records/:id/edit" element={<RecordEdit />} /><Route path="/records/:id" element={<RecordDetail />} /><Route path="/report" element={<Report />} /><Route path="/settings" element={<Settings />} /><Route path="/account" element={<AccountPage />} /></Routes>{showNav && <nav className="bottom-nav">{[["/", "⌂", "首页"], ["/trends", "⌁", "趋势"], ["/calendar", "▦", "日历"], ["/records", "☷", "记录"], ["/report", "▤", "报告"]].map(([to, icon, name]) => <NavLink end={to === "/"} to={to} key={to}><span>{icon}</span>{name}</NavLink>)}</nav>}</div>;
 }
 
 export function App() {

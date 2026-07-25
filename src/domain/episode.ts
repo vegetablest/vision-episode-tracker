@@ -83,3 +83,9 @@ export interface SyncJob {
 export type EpisodeDraft = Pick<VisionEpisode, "eyeScope" | "visualFields" | "visualSymptoms" | "severity" | "onsetPattern" | "similarToPrevious" | "recoveredCompletely" | "residualSymptoms" | "associatedSymptoms" | "activity" | "possibleRelatedFactors" | "otherVisualSymptom" | "otherAssociatedSymptom" | "otherRelatedFactor" | "note">;
 
 export const emptyDetails: EpisodeDraft = { eyeScope: null, visualFields: [], visualSymptoms: [], severity: null, onsetPattern: null, similarToPrevious: null, recoveredCompletely: null, residualSymptoms: null, associatedSymptoms: [], activity: null, possibleRelatedFactors: [], otherVisualSymptom: null, otherAssociatedSymptom: null, otherRelatedFactor: null, note: null };
+
+export function episodeDetails(episode: VisionEpisode): EpisodeDraft {
+  const details = { ...episode };
+  const keys = Object.keys(emptyDetails) as (keyof EpisodeDraft)[];
+  return Object.fromEntries(keys.map((key) => [key, details[key]])) as unknown as EpisodeDraft;
+}

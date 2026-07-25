@@ -18,6 +18,8 @@ export interface ManualEpisodeInput {
   details?: Partial<EpisodeDraft>;
 }
 
+export type EpisodeEditInput = Omit<ManualEpisodeInput, "timezone">;
+
 export class EpisodeRepository {
   constructor(private readonly database: VisionTrackerDB = db) {}
 
@@ -64,6 +66,30 @@ export class EpisodeRepository {
   }
 
   async updateEpisode(id: string, patch: Partial<EpisodeDraft>): Promise<VisionEpisode> { return this.mutate(id, (episode) => ({ ...episode, ...patch })); }
+  async editEpisode(id: string, input: EpisodeEditInput): Promise<VisionEpisode> {
+    return this.mutate(id, (episode) => {
+      if (episode.status === "ongoing") throw new Error("请先结束正在进行的记录");
+      const computed = input.startAt && input.endAt ? (new Date(input.endAt).getTime() - new Date(input.startAt).getTime()) / 60000 : null;
+      const minutes = computed ?? input.durationMinutes;
+      const endTimeAccuracy = input.endAt && (input.accuracy === "exact" || input.accuracy === "approximate") ? input.accuracy : "unknown";
+      return {
+        ...episode,
+        ...input.details,
+        occurredOn: input.occurredOn,
+        startAt: input.startAt,
+        endAt: input.endAt,
+        timePeriod: input.timePeriod,
+        dateAccuracy: input.accuracy === "period_only" || input.accuracy === "date_only" ? input.accuracy : "exact",
+        startTimeAccuracy: input.accuracy,
+        endTimeAccuracy,
+        duration: {
+          minutes,
+          source: computed !== null ? "computed" : minutes !== null ? "manual" : "unknown",
+          accuracy: minutes !== null ? input.accuracy === "exact" ? "exact" : "approximate" : "unknown",
+        },
+      };
+    });
+  }
   async voidEpisode(id: string): Promise<void> { await this.mutate(id, (episode) => ({ ...episode, status: "voided", voidedAt: new Date().toISOString() })); }
   async restoreEpisode(id: string): Promise<void> { await this.mutate(id, (episode) => ({ ...episode, status: episode.endAt || episode.recordMethod === "manual" ? "completed" : "ongoing", voidedAt: null })); }
   async permanentlyDeleteEpisode(id: string): Promise<void> { await this.database.transaction("rw", this.database.episodes, this.database.metadata, this.database.syncQueue, async () => { const existing = await this.database.episodes.get(id); if (!existing) return; const updatedAt = new Date().toISOString(); await this.database.episodes.delete(id); await this.queue(id, "delete", existing.revision + 1, updatedAt); await this.changed(); }); }

@@ -5,10 +5,10 @@ import type { AssociatedSymptom, EpisodeDraft, EyeScope, PossibleRelatedFactor, 
 import type { VisionEpisode } from "../domain/episode";
 import { activities, associatedSymptoms, eyeScopes, relatedFactors, visualFields, visualSymptoms } from "../domain/episode";
 
-interface Props { value: Partial<EpisodeDraft>; onChange: (value: Partial<EpisodeDraft>) => void }
+interface Props { value: Partial<EpisodeDraft>; onChange: (value: Partial<EpisodeDraft>) => void; initiallyExpanded?: boolean }
 
-export function EpisodeDetailsForm({ value, onChange }: Props) {
-  const [expanded, setExpanded] = useState(false);
+export function EpisodeDetailsForm({ value, onChange, initiallyExpanded = false }: Props) {
+  const [expanded, setExpanded] = useState(initiallyExpanded);
   const toggleVisual = (item: VisualSymptom) => {
     const values = value.visualSymptoms ?? [];
     onChange({ ...value, visualSymptoms: values.includes(item) ? values.filter((entry) => entry !== item) : [...values, item] });
